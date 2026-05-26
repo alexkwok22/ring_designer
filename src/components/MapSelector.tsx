@@ -36,8 +36,11 @@ export default function MapSelector({ bounds, bearing, onBoundsChange }: Props) 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
+    let cancelled = false;
+
     // Dynamically import Leaflet to avoid SSR issues
     import("leaflet").then((L) => {
+      if (cancelled || !mapRef.current || mapInstanceRef.current) return;
       // Fix default icon paths for Next.js
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -67,6 +70,7 @@ export default function MapSelector({ bounds, bearing, onBoundsChange }: Props) 
     });
 
     return () => {
+      cancelled = true;
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
